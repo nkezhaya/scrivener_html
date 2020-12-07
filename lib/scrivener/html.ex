@@ -107,7 +107,9 @@ defmodule Scrivener.HTML do
     merged_opts = Keyword.merge(@defaults, opts)
 
     path = opts[:path] || find_path_fn(conn && paginator.entries, args)
-    params = Keyword.drop(opts, Keyword.keys(@defaults) ++ [:path, :hide_single, :link_fun])
+
+    opts_keys = [:path, :hide_single, :link_fun, :query_string]
+    params = Keyword.drop(opts, Keyword.keys(@defaults) ++ opts_keys)
 
     hide_single_result = opts[:hide_single] && paginator.total_pages < 2
 
@@ -119,7 +121,8 @@ defmodule Scrivener.HTML do
       path: path,
       args: [conn, merged_opts[:action]] ++ args,
       page_param: merged_opts[:page_param],
-      link_fun: link_fun
+      link_fun: link_fun,
+      query_string: opts[:query_string]
     }
 
     if hide_single_result do
@@ -192,7 +195,7 @@ defmodule Scrivener.HTML do
   defp page({:ellipsis, text}, page_opts) do
     paginator = page_opts.paginator
 
-    content_tag(:li, class: li_classes_for_style(paginator, :ellipsis) |> Enum.join(" ")) do
+    content_tag(:li, class: li_classes(paginator, :ellipsis) |> Enum.join(" ")) do
       ellipsis_tag()
       |> content_tag(safe(text),
         class: link_classes() |> Enum.join(" ")
@@ -202,24 +205,10 @@ defmodule Scrivener.HTML do
 
   defp page(
          {text, page_number},
-         %{
-           paginator: paginator,
-           url_params: url_params,
-           path: path,
-           args: args,
-           page_param: page_param,
-           link_fun: link_fun
-         }
+         page_opts = %{paginator: paginator, link_fun: link_fun}
        ) do
-    params_with_page =
-      url_params ++
-        case page_number > 1 do
-          true -> [{page_param, page_number}]
-          false -> []
-        end
-
-    content_tag :li, class: li_classes_for_style(paginator, page_number) |> Enum.join(" ") do
-      to = apply(path, args ++ [params_with_page])
+    content_tag :li, class: li_classes(paginator, page_number) |> Enum.join(" ") do
+      to = to(page_number, page_opts)
       class = link_classes() |> Enum.join(" ")
 
       if to do
@@ -239,12 +228,42 @@ defmodule Scrivener.HTML do
     end
   end
 
+  defp to(page_number, %{
+         url_params: url_params,
+         path: path,
+         args: args,
+         page_param: page_param,
+         query_string: query_string
+       }) do
+    params_with_page =
+      url_params ++
+        if page_number > 1,
+          do: [{page_param, page_number}],
+          else: []
+
+    to = apply(path, args ++ [params_with_page])
+
+    if to && query_string do
+      # Remove page params from the query
+      query_string =
+        query_string
+        |> String.replace(~r/&?page=\d/, "")
+        |> String.trim_leading("&")
+
+      if String.ends_with?(to, "?"),
+        do: to <> query_string,
+        else: to <> "&" <> query_string
+    else
+      to
+    end
+  end
+
   defp active_page?(%{page_number: page_number}, page_number), do: true
   defp active_page?(_paginator, _page_number), do: false
 
-  defp li_classes_for_style(_paginator, :ellipsis), do: ["page-item"]
+  defp li_classes(_paginator, :ellipsis), do: ["page-item"]
 
-  defp li_classes_for_style(paginator, page_number) do
+  defp li_classes(paginator, page_number) do
     if(paginator.page_number == page_number, do: ["active", "page-item"], else: ["page-item"])
   end
 
