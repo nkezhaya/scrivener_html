@@ -1,15 +1,4 @@
 defmodule Scrivener.HTML do
-  use Phoenix.HTML
-  @defaults [view_style: :bootstrap, action: :index, page_param: :page, hide_single: false]
-  @view_styles [:bootstrap, :semantic, :foundation, :bootstrap_v4, :materialize, :bulma]
-  @raw_defaults [
-    distance: 5,
-    next: ">>",
-    previous: "<<",
-    first: true,
-    last: true,
-    ellipsis: raw("&hellip;")
-  ]
   @moduledoc """
   For use with Phoenix.HTML, configure the `:routes_helper` module like the following:
 
@@ -27,7 +16,7 @@ defmodule Scrivener.HTML do
 
       <%= pagination_links @conn, @page %>
 
-  Where `@page` is a `%Scrivener.Page{}` struct returned from `Repo.paginate/2`.
+  Where `@page` is a `%Page{}` struct returned from `Repo.paginate/2`.
 
   Customize output. Below are the defaults.
 
@@ -39,6 +28,17 @@ defmodule Scrivener.HTML do
 
   For SEO related functions, see `Scrivener.HTML.SEO` (these are automatically imported).
   """
+  use Phoenix.HTML
+  alias Scrivener.Page
+  @defaults [action: :index, page_param: :page, hide_single: false]
+  @raw_defaults [
+    distance: 5,
+    next: ">>",
+    previous: "<<",
+    first: true,
+    last: true,
+    ellipsis: raw("&hellip;")
+  ]
 
   @doc false
   defmacro __using__(_) do
@@ -68,16 +68,10 @@ defmodule Scrivener.HTML do
 
       #{inspect @defaults}
 
-  The `view_style` indicates which CSS framework you are using. The default is
-  `:bootstrap`, but you can add your own using the `Scrivener.HTML.raw_pagination_links/2` function
-  if desired. The full list of available `view_style`s is here:
-
-      #{inspect @view_styles}
-
   An example of the output data:
 
-      iex> Scrivener.HTML.pagination_links(%Scrivener.Page{total_pages: 10, page_number: 5}) |> Phoenix.HTML.safe_to_string()
-      "<nav><ul class=\"pagination\"><li class=\"\"><a class=\"\" href=\"?page=4\" rel=\"prev\">&lt;&lt;</a></li><li class=\"\"><a class=\"\" href=\"?\" rel=\"canonical\">1</a></li><li class=\"\"><a class=\"\" href=\"?page=2\" rel=\"canonical\">2</a></li><li class=\"\"><a class=\"\" href=\"?page=3\" rel=\"canonical\">3</a></li><li class=\"\"><a class=\"\" href=\"?page=4\" rel=\"prev\">4</a></li><li class=\"active\"><a class=\"\">5</a></li><li class=\"\"><a class=\"\" href=\"?page=6\" rel=\"next\">6</a></li><li class=\"\"><a class=\"\" href=\"?page=7\" rel=\"canonical\">7</a></li><li class=\"\"><a class=\"\" href=\"?page=8\" rel=\"canonical\">8</a></li><li class=\"\"><a class=\"\" href=\"?page=9\" rel=\"canonical\">9</a></li><li class=\"\"><a class=\"\" href=\"?page=10\" rel=\"canonical\">10</a></li><li class=\"\"><a class=\"\" href=\"?page=6\" rel=\"next\">&gt;&gt;</a></li></ul></nav>"
+      iex> Scrivener.HTML.pagination_links(%Page{total_pages: 10, page_number: 5}) |> Phoenix.HTML.safe_to_string()
+      "<nav aria-label=\"Page navigation\"><ul class=\"pagination\"><li class=\"page-item\"><a class=\"page-link\" href=\"?page=4\" rel=\"prev\">&lt;&lt;</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?\" rel=\"canonical\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=2\" rel=\"canonical\">2</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=3\" rel=\"canonical\">3</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=4\" rel=\"prev\">4</a></li><li class=\"active page-item\"><a class=\"page-link\">5</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=6\" rel=\"next\">6</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=7\" rel=\"canonical\">7</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=8\" rel=\"canonical\">8</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=9\" rel=\"canonical\">9</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=10\" rel=\"canonical\">10</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"?page=6\" rel=\"next\">&gt;&gt;</a></li></ul></nav>"
 
   In order to generate links with nested objects (such as a list of comments for a given post)
   it is necessary to pass those arguments. All arguments in the `args` parameter will be directly
@@ -85,7 +79,7 @@ defmodule Scrivener.HTML do
   as `params` to the path helper function. For example, `@post`, which has an index of paginated
   `@comments` would look like the following:
 
-      Scrivener.HTML.pagination_links(@conn, @comments, [@post], view_style: :bootstrap, my_param: "foo")
+      Scrivener.HTML.pagination_links(@conn, @comments, [@post], my_param: "foo")
 
   You'll need to be sure to configure `:scrivener_html` with the `:routes_helper`
   module (ex. MyApp.Routes.Helpers) in Phoenix. With that configured, the above would generate calls
@@ -104,10 +98,6 @@ defmodule Scrivener.HTML do
   def pagination_links(conn, paginator, args, opts) do
     opts =
       Keyword.merge(opts,
-        view_style:
-          opts[:view_style] || Application.get_env(:scrivener_html, :view_style, :bootstrap)
-      )
-      |> Keyword.merge(
         hide_single:
           opts[:hide_single] || Application.get_env(:scrivener_html, :hide_single, false)
       )
@@ -124,7 +114,6 @@ defmodule Scrivener.HTML do
     else
       # Ensure ordering so pattern matching is reliable
       _pagination_links(paginator,
-        view_style: merged_opts[:view_style],
         path: path,
         args: [conn, merged_opts[:action]] ++ args,
         page_param: merged_opts[:page_param],
@@ -133,13 +122,13 @@ defmodule Scrivener.HTML do
     end
   end
 
-  def pagination_links(%Scrivener.Page{} = paginator),
+  def pagination_links(%Page{} = paginator),
     do: pagination_links(nil, paginator, [], [])
 
-  def pagination_links(%Scrivener.Page{} = paginator, opts),
+  def pagination_links(%Page{} = paginator, opts),
     do: pagination_links(nil, paginator, [], opts)
 
-  def pagination_links(conn, %Scrivener.Page{} = paginator),
+  def pagination_links(conn, %Page{} = paginator),
     do: pagination_links(conn, paginator, [], [])
 
   def pagination_links(conn, paginator, [{_, _} | _] = opts),
@@ -178,40 +167,7 @@ defmodule Scrivener.HTML do
     "#{acc}#{if(acc != "", do: "_")}#{Phoenix.Naming.resource_name(model.__struct__)}"
   end
 
-  defp _pagination_links(_paginator,
-         view_style: style,
-         path: _path,
-         args: _args,
-         page_param: _page_param,
-         params: _params
-       )
-       when not (style in @view_styles) do
-    raise "Scrivener.HTML: View style #{inspect(style)} is not a valid view style. Please use one of #{
-            inspect(@view_styles)
-          }"
-  end
-
-  # Bootstrap implementation
   defp _pagination_links(paginator,
-         view_style: :bootstrap,
-         path: path,
-         args: args,
-         page_param: page_param,
-         params: params
-       ) do
-    url_params = Keyword.drop(params, Keyword.keys(@raw_defaults))
-
-    content_tag :nav do
-      content_tag :ul, class: "pagination" do
-        raw_pagination_links(paginator, params)
-        |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :bootstrap))
-      end
-    end
-  end
-
-  # Bootstrap implementation
-  defp _pagination_links(paginator,
-         view_style: :bootstrap_v4,
          path: path,
          args: args,
          page_param: page_param,
@@ -223,72 +179,6 @@ defmodule Scrivener.HTML do
       content_tag :ul, class: "pagination" do
         raw_pagination_links(paginator, params)
         |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :bootstrap_v4))
-      end
-    end
-  end
-
-  # Semantic UI implementation
-  defp _pagination_links(paginator,
-         view_style: :semantic,
-         path: path,
-         args: args,
-         page_param: page_param,
-         params: params
-       ) do
-    url_params = Keyword.drop(params, Keyword.keys(@raw_defaults))
-
-    content_tag :div, class: "ui pagination menu" do
-      raw_pagination_links(paginator, params)
-      |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :semantic))
-    end
-  end
-
-  # Foundation for Sites 6.x implementation
-  defp _pagination_links(paginator,
-         view_style: :foundation,
-         path: path,
-         args: args,
-         page_param: page_param,
-         params: params
-       ) do
-    url_params = Keyword.drop(params, Keyword.keys(@raw_defaults))
-
-    content_tag :ul, class: "pagination", role: "pagination" do
-      raw_pagination_links(paginator, params)
-      |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :foundation))
-    end
-  end
-
-  # Materialized implementation
-  defp _pagination_links(paginator,
-         view_style: :materialize,
-         path: path,
-         args: args,
-         page_param: page_param,
-         params: params
-       ) do
-    url_params = Keyword.drop(params, Keyword.keys(@raw_defaults))
-
-    content_tag :ul, class: "pagination" do
-      raw_pagination_links(paginator, params)
-      |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :materialize))
-    end
-  end
-
-  # Bulma implementation
-  defp _pagination_links(paginator,
-         view_style: :bulma,
-         path: path,
-         args: args,
-         page_param: page_param,
-         params: params
-       ) do
-    url_params = Keyword.drop(params, Keyword.keys(@raw_defaults))
-
-    content_tag :nav, class: "pagination is-centered" do
-      content_tag :ul, class: "pagination-list" do
-        raw_pagination_links(paginator, params)
-        |> Enum.map(&page(&1, url_params, args, page_param, path, paginator, :bulma))
       end
     end
   end
