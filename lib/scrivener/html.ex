@@ -247,7 +247,7 @@ defmodule Scrivener.HTML do
       # Remove page params from the query
       query_string =
         query_string
-        |> String.replace(~r/&?page=\d/, "")
+        |> String.replace(~r/&?page=\d+/, "")
         |> String.trim_leading("&")
 
       if String.ends_with?(to, "?"),
