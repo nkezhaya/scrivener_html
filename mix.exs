@@ -48,8 +48,8 @@ defmodule ScrivenerHtml.Mixfile do
   defp deps do
     [
       {:scrivener, "~> 2.7"},
-      {:phoenix, "~> 1.5"},
-      {:phoenix_html, "~> 2.14"},
+      {:phoenix, ">= 1.5.0"},
+      {:phoenix_html, ">= 2.14.0"},
       {:jason, "~> 1.2", optional: true},
       {:plug, "~> 1.10"},
       {:ex_doc, "~> 0.19", only: :dev},
