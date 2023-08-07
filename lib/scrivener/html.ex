@@ -1,3 +1,5 @@
+Code.ensure_compiled!(Scrivener.Page)
+
 defmodule Scrivener.HTML do
   @moduledoc """
   For use with Phoenix.HTML, configure the `:routes_helper` module like the following:
