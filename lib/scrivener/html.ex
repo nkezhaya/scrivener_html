@@ -30,7 +30,9 @@ defmodule Scrivener.HTML do
 
   For SEO related functions, see `Scrivener.HTML.SEO` (these are automatically imported).
   """
-  use Phoenix.HTML
+  import Phoenix.HTML, warn: false
+  import Phoenix.HTML.Form, warn: false
+  use PhoenixHTMLHelpers
   alias Scrivener.Page
   @defaults [action: :index, page_param: :page, hide_single: false]
   @raw_defaults [

@@ -12,7 +12,9 @@ defmodule Scrivener.HTML.SEO do
   for help with how to do that. The recommended option is to use `render_existing/2` in your layout file and add a separate view to render that.
   """
   alias Scrivener.Page
-  use Phoenix.HTML
+  import Phoenix.HTML, warn: false
+  import Phoenix.HTML.Form, warn: false
+  use PhoenixHTMLHelpers
 
   @defaults Keyword.drop(Scrivener.HTML.defaults(), [:view_style])
 

@@ -50,6 +50,7 @@ defmodule ScrivenerHtml.Mixfile do
       {:scrivener, "~> 2.7"},
       {:phoenix, ">= 0.0.0"},
       {:phoenix_html, ">= 0.0.0"},
+      {:phoenix_html_helpers, ">= 0.0.0"},
       {:jason, ">= 0.0.0", optional: true},
       {:plug, ">= 0.0.0"},
       {:ex_doc, "~> 0.19", only: :dev},
