@@ -161,7 +161,10 @@ defmodule Scrivener.HTMLTest do
 
     test "does not include ellipsis on first page" do
       assert pages(1..6) ==
-               links_with_opts([total_pages: 8, page_number: 1], first: true, ellipsis: "&hellip;")
+               links_with_opts([total_pages: 8, page_number: 1],
+                 first: true,
+                 ellipsis: "&hellip;"
+               )
     end
 
     test "uses ellipsis only beyond <distance> of first page" do
@@ -304,50 +307,42 @@ defmodule Scrivener.HTMLTest do
       Application.put_env(:scrivener_html, :view_style, :bootstrap)
       Application.put_env(:scrivener_html, :routes_helper, MyApp.Router.Helpers)
 
-      assert {:safe,
-              [
-                60,
-                "nav",
-                [[32, "aria-label", 61, 34, "Page navigation", 34]],
-                62,
-                [
-                  60,
-                  "ul",
-                  [[32, "class", 61, 34, "pagination", 34]],
-                  62,
-                  [
-                    [
-                      60,
-                      "li",
-                      [[32, "class", 61, 34, "active page-item", 34]],
-                      62,
-                      [
-                        60,
-                        "a",
-                        [[32, "class", 61, 34, "page-link", 34]],
-                        62,
-                        "1",
-                        60,
-                        47,
-                        "a",
-                        62
-                      ],
-                      60,
-                      47,
-                      "li",
-                      62
-                    ]
-                  ],
-                  60,
-                  47,
-                  "ul",
-                  62
-                ],
-                60,
-                47,
-                "nav",
-                62
-              ]} =
+      assert {
+               :safe,
+               [
+                 60,
+                 "nav",
+                 [32, "aria-label", 61, 34, "Page navigation", 34],
+                 62,
+                 [
+                   60,
+                   "ul",
+                   [" class=\"", "pagination", 34],
+                   62,
+                   [
+                     [
+                       60,
+                       "li",
+                       [" class=\"", "active page-item", 34],
+                       62,
+                       [60, "a", [" class=\"", "page-link", 34], 62, "1", 60, 47, "a", 62],
+                       60,
+                       47,
+                       "li",
+                       62
+                     ]
+                   ],
+                   60,
+                   47,
+                   "ul",
+                   62
+                 ],
+                 60,
+                 47,
+                 "nav",
+                 62
+               ]
+             } =
                HTML.pagination_links(build_conn(), %Page{
                  entries: [],
                  page_number: 1,
@@ -379,50 +374,42 @@ defmodule Scrivener.HTMLTest do
 
   describe "View Styles" do
     test "renders bootstrap v4 styling" do
-      assert {:safe,
-              [
-                60,
-                "nav",
-                [[32, "aria-label", 61, 34, "Page navigation", 34]],
-                62,
-                [
-                  60,
-                  "ul",
-                  [[32, "class", 61, 34, "pagination", 34]],
-                  62,
-                  [
-                    [
-                      60,
-                      "li",
-                      [[32, "class", 61, 34, "active page-item", 34]],
-                      62,
-                      [
-                        60,
-                        "a",
-                        [[32, "class", 61, 34, "page-link", 34]],
-                        62,
-                        "1",
-                        60,
-                        47,
-                        "a",
-                        62
-                      ],
-                      60,
-                      47,
-                      "li",
-                      62
-                    ]
-                  ],
-                  60,
-                  47,
-                  "ul",
-                  62
-                ],
-                60,
-                47,
-                "nav",
-                62
-              ]} =
+      assert {
+               :safe,
+               [
+                 60,
+                 "nav",
+                 [32, "aria-label", 61, 34, "Page navigation", 34],
+                 62,
+                 [
+                   60,
+                   "ul",
+                   [" class=\"", "pagination", 34],
+                   62,
+                   [
+                     [
+                       60,
+                       "li",
+                       [" class=\"", "active page-item", 34],
+                       62,
+                       [60, "a", [" class=\"", "page-link", 34], 62, "1", 60, 47, "a", 62],
+                       60,
+                       47,
+                       "li",
+                       62
+                     ]
+                   ],
+                   60,
+                   47,
+                   "ul",
+                   62
+                 ],
+                 60,
+                 47,
+                 "nav",
+                 62
+               ]
+             } =
                HTML.pagination_links(
                  build_conn(),
                  %Page{
